@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plant Disease Classification</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        function updateTreatments() {
+            const disease = document.getElementById("disease-select").value;
+            fetch("/get_treatments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ disease: disease })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const treatmentsList = document.getElementById("treatments");
+                treatmentsList.innerHTML = "";
+                data.treatments.forEach(treatment => {
+                    const li = document.createElement("li");
+                    li.textContent = treatment;
+                    treatmentsList.appendChild(li);
+                });
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Plant Disease Classification</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">Upload and Classify</button>
+    </form>
+    
+    {% if predicted_class %}
+        <h2>Predicted Disease: {{ predicted_class }}</h2>
+        <h3>Drug Solutions:</h3>
+        <ul id="treatments">
+            {% for treatment in treatments %}
+                <li>{{ treatment }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2>Select a Disease to View Drug Solutions</h2>
+    <select id="disease-select" onchange="updateTreatments()">
+        {% for disease in plant_diseases %}
+            <option value="{{ disease }}">{{ disease.replace('_', ' ') }}</option>
+        {% endfor %}
+    </select>
+</body>
+</html>
